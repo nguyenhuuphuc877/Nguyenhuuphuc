@@ -1,0 +1,40 @@
+name: Build APK with Buildozer
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build Kivy APK
+    runs-on: ubuntu-22.04  # ✅ Tránh lỗi với build-tools 36 trên Ubuntu 24.04
+
+    steps:
+      # B1: Checkout repo
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # B2: Setup Python 3.10
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # B3: Install Buildozer
+      - name: Install Buildozer & dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y zip unzip openjdk-17-jdk python3-pip python3-setuptools python3-wheel build-essential git libffi-dev libssl-dev libz-dev
+          pip install --upgrade pip Cython
+          pip install buildozer
+
+      # B4: Build APK
+      - name: Build APK
+        run: buildozer -v android debug
+
+      # B5: Upload file APK
+      - name: Upload APK to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ddos-apk
+          path: bin/*.apk
